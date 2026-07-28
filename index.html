@@ -372,7 +372,8 @@
     background-size: cover;
     background-position: center;
   }
-  .player-art > * { position: absolute; top: 0; left: 50%; margin-left: -75px; width: 150px !important; height: 84px !important; border: 0; }
+  .player-art #yt-player, .player-art iframe { position: absolute; top: 0; left: 50%; margin-left: -75px; width: 150px !important; height: 84px !important; border: 0; }
+  .player-cover { position: absolute; inset: 0; z-index: 2; background-size: cover; background-position: center; background-color: #0d0d0f; }
   .player-info { flex: 1; min-width: 0; }
   .player-track { font-weight: 600; font-size: 15px; }
   .player-sub { color: var(--text-3); font-size: 12.5px; margin-top: 2px; font-family: var(--mono); }
@@ -542,7 +543,7 @@
       <div class="card full reveal" id="music">
         <span class="label">// now playing</span>
         <div class="player">
-          <div class="player-art" id="plArt"><div id="yt-player"></div></div>
+          <div class="player-art" id="plArt"><div id="yt-player"></div><div class="player-cover" id="plCover"></div></div>
           <div class="player-info">
             <div class="player-track" id="plTitle">FASHION</div>
             <div class="player-sub" id="plSub">Britney Manson · 0:00 / 0:00</div>
@@ -787,6 +788,7 @@
   var plSub = document.getElementById('plSub');
   var plTitle = document.getElementById('plTitle');
   var plArt = document.getElementById('plArt');
+  var plCover = document.getElementById('plCover');
 
   function coverUrl(id) { return 'https://i.ytimg.com/vi/' + id + '/hqdefault.jpg'; }
   function paintTrack() {
@@ -794,10 +796,8 @@
     if (plTitle) plTitle.textContent = t.title;
     if (plSub) plSub.textContent = t.artist + ' · 0:00 / 0:00';
     if (plProg) plProg.style.width = '0%';
-    if (plArt) {
-      plArt.style.backgroundImage = 'url(' + coverUrl(t.id) + ')';
-      plArt.style.backgroundSize = 'cover';
-      plArt.style.backgroundPosition = 'center';
+    if (plCover) {
+      plCover.style.backgroundImage = 'url(' + coverUrl(t.id) + ')';
     }
   }
 
