@@ -59,12 +59,12 @@
     position: fixed;
     top: 0;
     left: 0;
-    width: 480px;
-    height: 480px;
+    width: 300px;
+    height: 300px;
     border-radius: 50%;
     pointer-events: none;
     z-index: 0;
-    background: radial-gradient(circle, rgba(132,164,255,0.12), rgba(132,164,255,0.04) 42%, transparent 68%);
+    background: radial-gradient(circle, rgba(132,164,255,0.16) 0%, rgba(132,164,255,0.08) 28%, rgba(132,164,255,0.025) 58%, transparent 80%);
     transform: translate(-50%, -50%);
     opacity: 0;
     transition: opacity 0.4s ease;
@@ -484,7 +484,7 @@
       <div class="nav-inner">
         <a href="#about">about</a>
         <a href="#project">проект</a>
-        <a href="#contact">контакт</a>
+        <a href="#contact">��он���акт</a>
       </div>
     </nav>
 
@@ -620,15 +620,24 @@
     var glow = document.getElementById('cursor-glow');
     var gx = window.innerWidth / 2, gy = window.innerHeight / 2;
     var tx = gx, ty = gy;
+    var stretch = 0, lastAngle = 0;
     window.addEventListener('mousemove', function (e) {
       tx = e.clientX; ty = e.clientY;
       glow.style.opacity = '1';
     });
     document.addEventListener('mouseleave', function () { glow.style.opacity = '0'; });
     function loop() {
-      gx += (tx - gx) * 0.14;
-      gy += (ty - gy) * 0.14;
-      glow.style.transform = 'translate(' + gx + 'px,' + gy + 'px) translate(-50%,-50%)';
+      var px = gx, py = gy;
+      gx += (tx - gx) * 0.16;
+      gy += (ty - gy) * 0.16;
+      var vx = gx - px, vy = gy - py;
+      var speed = Math.sqrt(vx * vx + vy * vy);
+      var target = Math.min(speed / 55, 1.1);
+      stretch += (target - stretch) * 0.2;
+      if (speed > 0.4) lastAngle = Math.atan2(vy, vx) * 180 / Math.PI;
+      var sx = 1 + stretch * 1.35;
+      var sy = 1 - stretch * 0.32;
+      glow.style.transform = 'translate(' + gx + 'px,' + gy + 'px) translate(-50%,-50%) rotate(' + lastAngle + 'deg) scale(' + sx + ',' + sy + ')';
       requestAnimationFrame(loop);
     }
     loop();
@@ -679,12 +688,20 @@
   }
 
   // 3. Рофл-статус "now" — крутится
-  var nowLines = ['чиллит','кодит бота','спит на паре','ест доширак','фармит на аризоне','вайбкодит','ищет смысл жизни','афк','пьёт энергос'];
+  var nowLines = ['чиллит','кодит бота','спит на паре','ест доширак','вайбкодит','ищет смысл жизни','афк','пьёт энергос','гоняет в GTA','залипает в ютуб','слушает музыку','катает катку','мемы листает','учит python','сидит в тг','пьёт чай','думает о вечном','ждёт обнову','лежит пластом','вайбит'];
   var nowTarget = null;
   document.querySelectorAll('.meta-val').forEach(function (el) { if (el.textContent.trim() === 'chill') nowTarget = el; });
   if (nowTarget) {
-    var ni = 0;
-    setInterval(function () { ni = (ni + 1) % nowLines.length; nowTarget.textContent = nowLines[ni]; }, 3000);
+    var ni = Math.floor(Math.random() * nowLines.length);
+    nowTarget.textContent = nowLines[ni];
+    (function schedule() {
+      var wait = (20 + (Math.random() * 4 - 2)) * 60 * 1000; // ~20 мин (18–22)
+      setTimeout(function () {
+        ni = (ni + 1) % nowLines.length;
+        nowTarget.textContent = nowLines[ni];
+        schedule();
+      }, wait);
+    })();
   }
 
   // 4. Konami code -> дождь эмодзи
@@ -693,7 +710,7 @@
   window.addEventListener('keydown', function (e) {
     seq.push(e.key);
     if (seq.length > konami.length) seq.shift();
-    if (seq.join(',').toLowerCase() === konami.join(',').toLowerCase()) { emojiRain(); toast('🎉 СЕКРЕТКА РАЗБЛОКИРОВАНА 🎉'); }
+    if (seq.join(',').toLowerCase() === konami.join(',').toLowerCase()) { emojiRain(); toast('🎉 СЕКРЕТКА РАЗБЛОКИРОВАНА ����'); }
   });
   function emojiRain() {
     var set = ['🤣','💀','🔥','😎','🤙','🗿','👾','💸'];
