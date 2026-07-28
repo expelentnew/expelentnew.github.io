@@ -466,6 +466,17 @@
     .gb-input { max-width: none !important; }
     .gb-form .btn { width: 100%; justify-content: center; }
   }
+  /* ---------- Terminal ---------- */
+  .term { font-family: var(--mono); font-size: 13px; line-height: 1.6; background: #0b0b0d; border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; margin-top: 4px; cursor: text; }
+  .term-out { color: var(--text-2); white-space: pre-wrap; word-break: break-word; max-height: 240px; overflow-y: auto; }
+  .term-line { margin: 0 0 2px; }
+  .term-dim { color: var(--text-3); }
+  .term-cmd { color: var(--text); }
+  .term-accent { color: var(--accent); }
+  .term-green { color: var(--green); }
+  .term-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+  .term-prompt { color: var(--green); white-space: nowrap; }
+  .term-in { flex: 1; min-width: 0; background: transparent; border: none; outline: none; color: var(--text); font-family: var(--mono); font-size: 13px; caret-color: var(--accent); }
 </style>
 </head>
 <body>
@@ -562,6 +573,18 @@
         </div>
       </div>
 
+
+      <!-- TERMINAL -->
+      <div class="card full reveal" id="terminal">
+        <span class="label">// terminal</span>
+        <div class="term" id="term">
+          <div class="term-out" id="termOut"><div class="term-line term-dim">напиши <b>help</b> и жми Enter ↵</div></div>
+          <div class="term-row">
+            <span class="term-prompt">expelentnew@site<span class="term-dim">:~$</span></span>
+            <input class="term-in" id="termIn" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="terminal" />
+          </div>
+        </div>
+      </div>
 
       <!-- CONTACT -->
       <div class="card full reveal" id="contact">
@@ -849,6 +872,92 @@
     if (tg === 'INPUT' || tg === 'TEXTAREA') return;
     if (e.code === 'Space') { e.preventDefault(); toggle(); }
   });
+
+  // ---------- Interactive terminal ----------
+  (function () {
+    var out = document.getElementById("termOut");
+    var inp = document.getElementById("termIn");
+    var term = document.getElementById("term");
+    if (!out || !inp) return;
+    var history = [], hpos = -1;
+    function line(html, cls) {
+      var d = document.createElement("div");
+      d.className = "term-line" + (cls ? " " + cls : "");
+      d.innerHTML = html;
+      out.appendChild(d);
+      out.scrollTop = out.scrollHeight;
+    }
+    function esc(s){ return s.replace(/[&<>]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c]; }); }
+    var cmds = {
+      help: function () {
+        line("доступные команды:", "term-dim");
+        line("<span class=\"term-accent\">help</span>     — этот список");
+        line("<span class=\"term-accent\">whoami</span>   — кто я");
+        line("<span class=\"term-accent\">skills</span>   — что умею");
+        line("<span class=\"term-accent\">project</span>  — мой проект");
+        line("<span class=\"term-accent\">socials</span>  — где меня найти");
+        line("<span class=\"term-accent\">now</span>      — чем занят");
+        line("<span class=\"term-accent\">date</span>     — время");
+        line("<span class=\"term-accent\">party</span>    — вечеринка 🎉");
+        line("<span class=\"term-accent\">clear</span>    — очистить");
+      },
+      whoami: function () { line("Санёк · 13 · вайбкодер из России 🇷🇺"); },
+      skills: function () {
+        line("Python <span class=\"term-green\">████████░░</span> учу");
+        line("Lua    <span class=\"term-green\">██████░░░░</span> пилю ботов");
+        line("LuaC   <span class=\"term-green\">█████░░░░░</span> компилю");
+        line("веб    <span class=\"term-green\">████░░░░░░</span> вот этот сайт :)");
+      },
+      project: function () {
+        line("<span class=\"term-cmd\">Arizona RP Bot</span> — телеграм-бот для Arizona RP.");
+        line("автоматизация рутины, статистика игроков, удобные команды.", "term-dim");
+      },
+      socials: function () { line("Telegram: <span class=\"term-accent\">@dituxo</span> → https://t.me/dituxo"); },
+      now: function () {
+        var n = ["чиллит","кодит бота","вайбкодит","слушает музыку","ждёт обнову","пьёт энергос"];
+        line("сейчас: " + n[Math.floor(Math.random()*n.length)]);
+      },
+      date: function () { line(new Intl.DateTimeFormat("ru-RU", { dateStyle:"full", timeStyle:"short" }).format(new Date())); },
+      party: function () {
+        document.body.classList.toggle("party");
+        line(document.body.classList.contains("party") ? "режим вечеринки ВКЛ 🎉" : "режим вечеринки выкл", "term-green");
+      },
+      sudo: function () { line("не, пароль не тот 😏", "term-dim"); },
+      clear: function () { out.innerHTML = ""; }
+    };
+    function run(raw) {
+      var cmd = raw.trim();
+      if (!cmd) return;
+      line("<span class=\"term-prompt\">$</span> " + esc(cmd), "term-cmd");
+      history.unshift(cmd); hpos = -1;
+      var name = cmd.split(" ")[0].toLowerCase();
+      if (name === "echo") { line(esc(cmd.slice(5))); return; }
+      if (cmds[name]) { cmds[name](); }
+      else { line("команда не найдена: " + esc(name) + ". напиши help", "term-dim"); }
+    }
+    inp.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") { run(inp.value); inp.value = ""; }
+      else if (e.key === "ArrowUp") { if (hpos < history.length - 1) { hpos++; inp.value = history[hpos]; } e.preventDefault(); }
+      else if (e.key === "ArrowDown") { if (hpos > 0) { hpos--; inp.value = history[hpos]; } else { hpos = -1; inp.value = ""; } e.preventDefault(); }
+    });
+    term.addEventListener("click", function () { inp.focus(); });
+  })();
+
+  // ---------- 3D card tilt ----------
+  (function () {
+    if (!window.matchMedia || !window.matchMedia("(pointer: fine)").matches) return;
+    var els = document.querySelectorAll(".card:not(#terminal), .hero");
+    els.forEach(function (el) {
+      el.addEventListener("mousemove", function (e) {
+        var r = el.getBoundingClientRect();
+        var px = (e.clientX - r.left) / r.width - 0.5;
+        var py = (e.clientY - r.top) / r.height - 0.5;
+        el.style.transition = "transform 0.12s ease";
+        el.style.transform = "perspective(900px) rotateX(" + (-py * 3.5).toFixed(2) + "deg) rotateY(" + (px * 3.5).toFixed(2) + "deg)";
+      });
+      el.addEventListener("mouseleave", function () { el.style.transform = ""; });
+    });
+  })();
 </script>
 </body>
 </html>
