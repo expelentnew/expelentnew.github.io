@@ -103,6 +103,51 @@
   }
   .nav a:hover { color: var(--text); background: var(--raised); }
 
+  /* ---------- Fun: toast ---------- */
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 28px;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--raised);
+    border: 1px solid var(--border-strong);
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 500;
+    padding: 12px 18px;
+    border-radius: 999px;
+    z-index: 200;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+    max-width: 90vw;
+    text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ---------- Fun: emoji rain ---------- */
+  .emoji-drop {
+    position: fixed;
+    top: -40px;
+    z-index: 150;
+    pointer-events: none;
+    will-change: transform;
+    animation: emojiFall linear forwards;
+  }
+  @keyframes emojiFall {
+    to { transform: translateY(110vh) rotate(360deg); }
+  }
+
+  /* ---------- Fun: clickable bits ---------- */
+  .avatar { cursor: pointer; }
+  .flag { cursor: pointer; user-select: none; }
+  .hero-name { cursor: default; }
+  body.party { animation: partyHue 5s linear infinite; }
+  @keyframes partyHue { to { filter: hue-rotate(360deg); } }
+
+  #yt-player { position: fixed; left: -9999px; top: 0; width: 320px; height: 180px; pointer-events: none; opacity: 0; }
+
   .wrap {
     position: relative;
     z-index: 1;
@@ -333,7 +378,7 @@
   .player-info { flex: 1; min-width: 0; }
   .player-track { font-weight: 600; font-size: 15px; }
   .player-sub { color: var(--text-3); font-size: 12.5px; margin-top: 2px; font-family: var(--mono); }
-  .player-bar { margin-top: 10px; height: 3px; border-radius: 3px; background: rgba(255,255,255,0.1); overflow: hidden; }
+  .player-bar { margin-top: 10px; height: 5px; border-radius: 3px; background: rgba(255,255,255,0.1); overflow: hidden; cursor: pointer; }
   .player-prog { height: 100%; width: 34%; background: var(--text); border-radius: 3px; }
   .player-btn {
     width: 42px; height: 42px;
@@ -480,6 +525,19 @@
         </div>
       </div>
 
+      <!-- MUSIC -->
+      <div class="card full reveal" id="music">
+        <span class="label">// now playing</span>
+        <div class="player">
+          <button class="player-btn" id="plBtn" title="play/pause (space)" aria-label="play">▶</button>
+          <div class="player-info">
+            <div class="player-track">FASHION</div>
+            <div class="player-sub" id="plSub">Britney Manson · 0:00 / 0:00</div>
+            <div class="player-bar" id="plBar"><div class="player-prog" id="plProg" style="width:0%"></div></div>
+          </div>
+        </div>
+      </div>
+
       <!-- PROJECT -->
       <div class="card full reveal" id="project">
         <span class="label">// featured project</span>
@@ -517,6 +575,9 @@
 
     <footer>© <span id="year"></span> expelentnew — made with care</footer>
   </div>
+
+  <div class="toast" id="toast"></div>
+  <div id="yt-player" aria-hidden="true"></div>
 
 <script>
   // Boot sequence
@@ -578,6 +639,163 @@
       alert('Фиг тебе, а не бот 😜');
     });
   }
+
+  // ===== РОФЛ-БЛОК =====
+  var toastEl = document.getElementById('toast');
+  var toastTimer;
+  function toast(msg) {
+    if (!toastEl) return;
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 2600);
+  }
+
+  // 1. Аватар — счётчик тыков
+  var avatarEl = document.querySelector('.avatar');
+  var pokes = 0;
+  var pokeLines = ['ой', 'хватит меня тыкать', 'ещё раз и обижусь', 'ну всё, я звоню маме', 'я не кнопка', 'щекотно 😹', 'харош', 'ты серьёзно?'];
+  if (avatarEl) {
+    avatarEl.addEventListener('click', function () {
+      toast(pokeLines[pokes % pokeLines.length]);
+      pokes++;
+      avatarEl.style.transform = 'rotate(' + (Math.random() * 20 - 10) + 'deg)';
+      setTimeout(function () { avatarEl.style.transform = ''; }, 200);
+      if (pokes === 10) { toast('окей ты победил, держи 🏆'); emojiRain(); }
+    });
+  }
+
+  // 2. Флаг — рандомное гражданство
+  var flagEl = document.querySelector('.flag');
+  var flags = ['🇷🇺','🇺🇸','🇯🇵','🇧🇷','🇫🇷','🇩🇪','🇨🇳','🏴‍☠️','🛸'];
+  if (flagEl) {
+    flagEl.addEventListener('click', function () {
+      flagEl.textContent = flags[Math.floor(Math.random() * flags.length)];
+      toast('сменил гражданство');
+    });
+  }
+
+  // 3. Рофл-статус "now" — крутится
+  var nowLines = ['чиллит','кодит бота','спит на паре','ест доширак','фармит на аризоне','вайбкодит','ищет смысл жизни','афк','пьёт энергос'];
+  var nowTarget = null;
+  document.querySelectorAll('.meta-val').forEach(function (el) { if (el.textContent.trim() === 'chill') nowTarget = el; });
+  if (nowTarget) {
+    var ni = 0;
+    setInterval(function () { ni = (ni + 1) % nowLines.length; nowTarget.textContent = nowLines[ni]; }, 3000);
+  }
+
+  // 4. Konami code -> дождь эмодзи
+  var seq = [];
+  var konami = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+  window.addEventListener('keydown', function (e) {
+    seq.push(e.key);
+    if (seq.length > konami.length) seq.shift();
+    if (seq.join(',').toLowerCase() === konami.join(',').toLowerCase()) { emojiRain(); toast('🎉 СЕКРЕТКА РАЗБЛОКИРОВАНА 🎉'); }
+  });
+  function emojiRain() {
+    var set = ['🤣','💀','🔥','😎','🤙','🗿','👾','💸'];
+    for (var i = 0; i < 60; i++) {
+      var s = document.createElement('div');
+      s.className = 'emoji-drop';
+      s.textContent = set[Math.floor(Math.random() * set.length)];
+      s.style.left = (Math.random() * 100) + 'vw';
+      s.style.animationDuration = (Math.random() * 2 + 2) + 's';
+      s.style.fontSize = (Math.random() * 20 + 18) + 'px';
+      document.body.appendChild(s);
+      (function (node) { setTimeout(function () { node.remove(); }, 4200); })(s);
+    }
+  }
+
+  // 5. Тайтл вкладки, когда уходишь
+  var realTitle = document.title;
+  document.addEventListener('visibilitychange', function () {
+    document.title = document.hidden ? '🥺 вернись...' : realTitle;
+  });
+
+  // 6. Рофл в консоли
+  console.log('%cЭй, хакер 🕵️', 'font-size:20px;font-weight:bold;');
+  console.log('%cкод платный, тут ничего интересного 💸', 'font-size:13px;color:#8aa4ff;');
+
+  // 7. Секрет: тройной клик по имени -> вечеринка
+  var nameEl = document.querySelector('.hero-name');
+  var nclicks = 0, nct;
+  if (nameEl) {
+    nameEl.addEventListener('click', function () {
+      nclicks++;
+      clearTimeout(nct);
+      nct = setTimeout(function () { nclicks = 0; }, 600);
+      if (nclicks >= 3) { document.body.classList.toggle('party'); toast('вечеринка! 🥳'); nclicks = 0; emojiRain(); }
+    });
+  }
+
+  // 8. Фоновая музыка — встроенный плеер (YouTube: FASHION, чистая версия)
+  var ytPlayer = null, ytReady = false, ytPlaying = false, wantPlay = false;
+  var plBtn = document.getElementById('plBtn');
+  var plBar = document.getElementById('plBar');
+  var plProg = document.getElementById('plProg');
+  var plSub = document.getElementById('plSub');
+
+  (function () {
+    var tag = document.createElement('script');
+    tag.src = 'https://www.youtube.com/iframe_api';
+    document.head.appendChild(tag);
+  })();
+
+  function fmt(t) {
+    t = Math.max(0, Math.floor(t || 0));
+    var m = Math.floor(t / 60), s = t % 60;
+    return m + ':' + (s < 10 ? '0' + s : s);
+  }
+
+  window.onYouTubeIframeAPIReady = function () {
+    ytPlayer = new YT.Player('yt-player', {
+      width: 320,
+      height: 180,
+      videoId: 'Xt9A9QPfEXQ',
+      playerVars: { autoplay: 0, controls: 0, disablekb: 1, playsinline: 1, loop: 1, playlist: 'Xt9A9QPfEXQ' },
+      events: {
+        onReady: function () {
+          ytReady = true;
+          ytPlayer.setVolume(60);
+          if (wantPlay) play();
+        },
+        onStateChange: function (e) {
+          if (e.data === YT.PlayerState.PLAYING) { ytPlaying = true; if (plBtn) plBtn.textContent = '⏸'; }
+          else if (e.data === YT.PlayerState.PAUSED) { ytPlaying = false; if (plBtn) plBtn.textContent = '▶'; }
+        }
+      }
+    });
+  };
+
+  function play() { if (ytPlayer) { ytPlayer.playVideo(); toast('врубил FASHION 🎵'); } }
+  function pause() { if (ytPlayer) ytPlayer.pauseVideo(); }
+  function toggle() {
+    if (!ytReady || !ytPlayer) { wantPlay = true; toast('секунду, гружу трек…'); return; }
+    if (ytPlaying) pause(); else play();
+  }
+
+  if (plBtn) plBtn.addEventListener('click', toggle);
+  if (plBar) plBar.addEventListener('click', function (e) {
+    if (!ytReady) return;
+    var rect = plBar.getBoundingClientRect();
+    var ratio = (e.clientX - rect.left) / rect.width;
+    var dur = ytPlayer.getDuration() || 0;
+    ytPlayer.seekTo(dur * Math.max(0, Math.min(1, ratio)), true);
+  });
+
+  setInterval(function () {
+    if (!ytReady || !ytPlayer || !ytPlayer.getDuration) return;
+    var dur = ytPlayer.getDuration() || 0;
+    var cur = ytPlayer.getCurrentTime() || 0;
+    if (dur > 0 && plProg) plProg.style.width = (cur / dur * 100) + '%';
+    if (plSub) plSub.textContent = 'Britney Manson · ' + fmt(cur) + ' / ' + fmt(dur);
+  }, 500);
+
+  document.addEventListener('keydown', function (e) {
+    var tg = (e.target && e.target.tagName) || '';
+    if (tg === 'INPUT' || tg === 'TEXTAREA') return;
+    if (e.code === 'Space') { e.preventDefault(); toggle(); }
+  });
 </script>
 </body>
 </html>
