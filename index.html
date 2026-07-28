@@ -494,8 +494,8 @@
               <span class="chip">LuaC</span>
             </div>
             <div class="project-actions">
-              <a class="btn btn-primary" href="https://t.me/dituxo" target="_blank" rel="noopener">Открыть бота</a>
-              <a class="btn btn-ghost" href="https://github.com/asurygin256-ops/expelentnew" target="_blank" rel="noopener">Код</a>
+              <a class="btn btn-primary" href="#" id="botBtn" role="button">Открыть бота</a>
+              <a class="btn btn-ghost" href="https://expelentnew.github.io/" target="_blank" rel="noopener">Код</a>
             </div>
           </div>
         </div>
@@ -569,6 +569,15 @@
     }
     loop();
   })();
+
+  // Bot button easter egg
+  var botBtn = document.getElementById('botBtn');
+  if (botBtn) {
+    botBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      alert('Фиг тебе, а не бот 😜');
+    });
+  }
 </script>
 </body>
 </html>
