@@ -482,6 +482,21 @@
     .gb-input { max-width: none !important; }
     .gb-form .btn { width: 100%; justify-content: center; }
   }
+  /* ---------- Touch devices: let taps reach the YouTube player so audio can start ---------- */
+  @media (hover: none) and (pointer: coarse) {
+    .player-art { cursor: pointer; }
+    .player-cover { pointer-events: none; }
+    .player-art::after {
+      content: "\25B6";
+      position: absolute; inset: 0; z-index: 3;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; color: #fff;
+      background: rgba(0,0,0,0.34);
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    .player-art.is-playing::after { opacity: 0; }
+  }
   /* ---------- Terminal ---------- */
   .term { font-family: var(--mono); font-size: 13px; line-height: 1.6; background: #0b0e13; border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-top: 4px; cursor: text; }
   .term-out { color: var(--text-2); white-space: pre-wrap; word-break: break-word; max-height: 240px; overflow-y: auto; }
@@ -998,8 +1013,8 @@
           if (wantPlay) play();
         },
         onStateChange: function (e) {
-          if (e.data === YT.PlayerState.PLAYING) { ytPlaying = true; if (plBtn) plBtn.textContent = '⏸'; }
-          else if (e.data === YT.PlayerState.PAUSED) { ytPlaying = false; if (plBtn) plBtn.textContent = '▶'; }
+          if (e.data === YT.PlayerState.PLAYING) { ytPlaying = true; if (plBtn) plBtn.textContent = '⏸'; if (plArt) plArt.classList.add('is-playing'); }
+          else if (e.data === YT.PlayerState.PAUSED) { ytPlaying = false; if (plBtn) plBtn.textContent = '▶'; if (plArt) plArt.classList.remove('is-playing'); }
           else if (e.data === YT.PlayerState.ENDED) { loadTrack(curi + 1, true); }
         }
       }
