@@ -929,7 +929,7 @@
     document.title = document.hidden ? '🥺 вернись...' : realTitle;
   });
 
-  // 6. Роф���� в консоли
+  // 6. Роф�� в консоли
   console.log('%cЭй, хакер 🕵️', 'font-size:20px;font-weight:bold;');
   console.log('%cкод платный, тут ничего интересного 💸', 'font-size:13px;color:#8aa4ff;');
 
@@ -957,6 +957,29 @@
     'Britney Manson - Fashion.mp3',
     'Джон Гарик - Arctic Rose.mp3'
   ];
+
+  // Эти обложки встроены прямо в сайт — они работают даже без картинок в тегах MP3.
+  function makeMusicCover(title, artist, color1, color2) {
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600" viewBox="0 0 600 600">' +
+      '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="' + color1 + '"/><stop offset="1" stop-color="' + color2 + '"/></linearGradient><filter id="b"><feGaussianBlur stdDeviation="35"/></filter></defs>' +
+      '<rect width="600" height="600" rx="56" fill="#080a10"/><circle cx="120" cy="100" r="190" fill="' + color1 + '" opacity=".55" filter="url(#b)"/><circle cx="520" cy="520" r="220" fill="' + color2 + '" opacity=".5" filter="url(#b)"/>' +
+      '<rect x="32" y="32" width="536" height="536" rx="42" fill="none" stroke="url(#g)" stroke-width="3" opacity=".85"/>' +
+      '<text x="64" y="92" fill="#fff" opacity=".58" font-family="Arial,sans-serif" font-size="22" letter-spacing="6">NOW PLAYING</text>' +
+      '<text x="64" y="390" fill="#fff" font-family="Arial,sans-serif" font-size="58" font-weight="800">' + title + '</text>' +
+      '<text x="66" y="442" fill="#fff" opacity=".72" font-family="Arial,sans-serif" font-size="25">' + artist + '</text>' +
+      '<path d="M68 505h190" stroke="url(#g)" stroke-width="12" stroke-linecap="round"/><circle cx="510" cy="492" r="54" fill="url(#g)"/><path d="M496 461v62c0 18-31 22-36 5-4-14 15-28 36-21v-58l42-9v55c0 18-31 22-36 5-4-14 15-28 36-21v-49z" fill="#fff" transform="translate(-8 -4) scale(.72) translate(205 210)"/></svg>';
+    return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  }
+  var TRACK_INFO = {
+    'Britney Manson - Fashion.mp3': {
+      title: 'FΛSHION', artist: 'Britney Manson',
+      cover: makeMusicCover('FΛSHION', 'BRITNEY MANSON', '#ff3fa4', '#7c3cff')
+    },
+    'Джон Гарик - Arctic Rose.mp3': {
+      title: 'Arctic Rose', artist: 'Джон Гарик',
+      cover: makeMusicCover('ARCTIC ROSE', 'ДЖОН ГАРИК', '#22d3ee', '#2563eb')
+    }
+  };
   /* ========================================================== */
 
   var audio = document.getElementById('plAudio');
@@ -1147,7 +1170,8 @@
     if (plSub) plSub.textContent = 'загружаю плейлист…';
     if (!PLAYLIST.length || typeof fetch !== 'function') { showEmpty(); return; }
     var jobs = PLAYLIST.map(function (src) {
-      var track = { url: src, title: cleanName(String(src).split('/').pop()), artist: '', cover: null, missing: false };
+      var info = TRACK_INFO[src] || {};
+      var track = { url: src, title: info.title || cleanName(String(src).split('/').pop()), artist: info.artist || '', cover: info.cover || null, missing: false };
       return fetch(src, { headers: { Range: 'bytes=0-524287' } })
         .then(function (r) { if (!r.ok) { track.missing = true; return null; } return r.arrayBuffer(); })
         .then(function (buf) { if (buf) { try { parseMeta(buf, track); } catch (e) {} } return track; })
@@ -1238,7 +1262,7 @@
         document.body.classList.toggle("party");
         line(document.body.classList.contains("party") ? "режим вечеринки ВКЛ 🎉" : "режим вечеринки выкл", "term-green");
       },
-      sudo: function () { line("не, пароль н�� тот ����", "term-dim"); },
+      sudo: function () { line("не, пароль не тот ����", "term-dim"); },
       clear: function () { out.innerHTML = ""; }
     };
     function run(raw) {
